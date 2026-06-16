@@ -29,7 +29,7 @@ export default function Dashboard() {
           <div style={{fontSize:'8px',letterSpacing:'4px',color:'white',fontWeight:700,marginTop:'2px'}}>N U T R I T I O N</div>
         </div>
         <nav style={{flex:1,padding:'10px 0'}}>
-          {[['Dashboard',''],['Finance','/finance'],['Tasks','/tasks'],['Schedule','/schedule'],['Inventory','/inventory'],['Shipping','/shipping'],['Staff / HR','/staff'],['Documents','/documents']].map(([label,path])=>(
+          {[['Dashboard',''],['Finance','/dashboard/finance'],['Tasks','/dashboard/tasks'],['Schedule','/dashboard/schedule'],['Inventory','/dashboard/inventory'],['Shipping','/dashboard/shipping'],['Staff / HR','/dashboard/staff'],['Documents','/dashboard/documents']].map(([label,path])=>(
             <div key={label} style={{padding:'10px 14px',color:path===''?'white':'rgba(255,255,255,0.5)',background:path===''?'rgba(255,255,255,0.1)':'transparent',borderLeft:path===''?'3px solid #F5A623':'3px solid transparent',cursor:'pointer',fontSize:'12px'}}>
               {label}
             </div>
