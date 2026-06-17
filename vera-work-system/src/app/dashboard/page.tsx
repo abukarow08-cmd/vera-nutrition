@@ -35,7 +35,7 @@ export default function Dashboard() {
     }
 
     // Today finance
-    const { data: todayFin } = await supabase.from('finance').select('*').gte('created_at', today).order('created_at', { ascending: false }).limit(5)
+    const { data: todayFin } = await supabase.from('finance').select('*').gte('created_at', today + 'T00:00:00').lte('created_at', today + 'T23:59:59').order('created_at', { ascending: false }).limit(10)
     setTodayFinance(todayFin || [])
 
     // Tasks
@@ -67,7 +67,7 @@ export default function Dashboard() {
   return (
     <div style={{display:'flex',minHeight:'100vh',fontFamily:'Inter,sans-serif'}}>
       {/* Sidebar */}
-      <div style={{width:'220px',background:'#142F5C',display:'flex',flexDirection:'column',flexShrink:0}}>
+      <div style={{width:'200px',minWidth:'200px',background:'#142F5C',display:'flex',flexDirection:'column',flexShrink:0}}>
         <div style={{padding:'20px 16px 16px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
           <div style={{fontFamily:'Arial Black,sans-serif',fontStyle:'italic',fontSize:'26px',fontWeight:900,color:'white',lineHeight:1}}>VERA</div>
           <div style={{fontSize:'7px',letterSpacing:'4px',color:'rgba(255,255,255,0.6)',fontWeight:700,marginTop:'3px'}}>N U T R I T I O N</div>
