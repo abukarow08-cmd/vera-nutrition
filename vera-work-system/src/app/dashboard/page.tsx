@@ -22,6 +22,11 @@ export default function Dashboard() {
     })
   }, [])
 
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
   async function fetchAll() {
     const now = new Date()
     const month = now.toISOString().slice(0, 7)
@@ -89,6 +94,7 @@ export default function Dashboard() {
           <div>
             <div style={{fontSize:'12px',fontWeight:600,color:'white'}}>{user?.email?.split('@')[0]}</div>
             <div style={{fontSize:'10px',color:'#F5A623',textTransform:'capitalize'}}>{user?.user_metadata?.role || 'owner'}</div>
+          <button onClick={handleLogout} style={{fontSize:'10px',color:'rgba(255,255,255,0.4)',background:'none',border:'none',cursor:'pointer',padding:0,marginTop:'2px',textAlign:'left'}}>Sign out</button>
           </div>
         </div>
       </div>
