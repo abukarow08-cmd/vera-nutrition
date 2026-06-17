@@ -15,9 +15,9 @@ export default function Dashboard() {
   const [todayStaff, setTodayStaff] = useState<any[]>([])
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => { const data = { user: session?.user };
-      if (!data.user) { router.push('/login'); return }
-      setUser(data.user)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push('/login'); return }
+      setUser(user)
       fetchAll()
     })
   }, [])
