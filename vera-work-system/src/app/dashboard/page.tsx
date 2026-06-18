@@ -90,7 +90,7 @@ export default function Dashboard() {
           ))}
         </nav>
         <div style={{padding:'16px',borderTop:'1px solid rgba(255,255,255,0.08)',display:'flex',alignItems:'center',gap:'10px'}}>
-          <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'#F5A623',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:700,color:'white',flexShrink:0}}}>{user?.email?.slice(0,2).toUpperCase()</div>
+          <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'#F5A623',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:700,color:'white',flexShrink:0}}}>{user?.email?.slice(0,2).toUpperCase()}</div>
           <div>
             <div style={{fontSize:'12px',fontWeight:600,color:'white'}}>{user?.email?.split('@')[0]}</div>
             <div style={{fontSize:'10px',color:'#F5A623',textTransform:'capitalize'}}>{user?.user_metadata?.role || 'owner'}</div>
