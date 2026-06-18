@@ -11,7 +11,7 @@ export default function Schedule() {
   const [staffList, setStaffList] = useState<any[]>([])
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<string|null>(null)
-  const [staffName, setStaffName] = useState('')
+  const [assignedTo, setAssignedTo] = useState('')
   const [shiftDate, setShiftDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
@@ -39,14 +39,15 @@ export default function Schedule() {
   async function saveShift() {
     if (!shiftDate || !startTime || !endTime) return
     setLoading(true)
-    const payload = { shift_date: shiftDate, start_time: startTime, end_time: endTime, notes: notes || null }
+    const payload: any = { shift_date: shiftDate, start_time: startTime, end_time: endTime, notes: notes || null }
+    if (assignedTo) payload.assigned_to = assignedTo
     if (editId) {
       await supabase.from('schedules').update(payload).eq('id', editId)
       setEditId(null)
     } else {
       await supabase.from('schedules').insert(payload)
     }
-    setStaffName(''); setShiftDate(''); setStartTime(''); setEndTime(''); setNotes('')
+    setAssignedTo(''); setShiftDate(''); setStartTime(''); setEndTime(''); setNotes('')
     setShowForm(false); setLoading(false)
     fetchShifts()
   }
@@ -58,9 +59,24 @@ export default function Schedule() {
   }
 
   function startEdit(s: any) {
-    setEditId(s.id); setStaffName(s.notes||''); setShiftDate(s.shift_date)
-    setStartTime(s.start_time?.slice(0,5)||''); setEndTime(s.end_time?.slice(0,5)||'')
+    setEditId(s.id)
+    setAssignedTo(s.assigned_to || '')
+    setShiftDate(s.shift_date)
+    setStartTime(s.start_time?.slice(0,5)||'')
+    setEndTime(s.end_time?.slice(0,5)||'')
+    setNotes(s.notes||'')
     setShowForm(true)
+  }
+
+  function getStaffName(s: any) {
+    const found = staffList.find(st => st.user_id === s.assigned_to)
+    return found ? found.full_name : s.notes || '—'
+  }
+
+  const staffColors = ['#2357A3','#16a34a','#b45309','#7c3aed','#dc2626','#0891b2']
+  function getStaffColor(assigned_to: string) {
+    const idx = staffList.findIndex(st => st.user_id === assigned_to)
+    return staffColors[idx % staffColors.length] || '#2357A3'
   }
 
   const today = new Date().toISOString().split('T')[0]
@@ -68,7 +84,6 @@ export default function Schedule() {
   const upcomingShifts = shifts.filter(s => s.shift_date > today)
   const pastShifts = shifts.filter(s => s.shift_date < today)
 
-  // Calendar helpers
   function getDaysInMonth(date: Date) {
     const year = date.getFullYear()
     const month = date.getMonth()
@@ -80,18 +95,6 @@ export default function Schedule() {
   function getShiftsForDay(year: number, month: number, day: number) {
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
     return shifts.filter(s => s.shift_date === dateStr)
-  }
-
-  function getStaffName(s: any) {
-    const found = staffList.find(st => st.user_id === s.assigned_to)
-    return found ? found.full_name : s.notes || '—'
-  }
-
-  const staffColors = ['#2357A3','#16a34a','#b45309','#7c3aed','#dc2626','#0891b2']
-
-  function getStaffColor(assigned_to: string) {
-    const idx = staffList.findIndex(st => st.user_id === assigned_to)
-    return staffColors[idx % staffColors.length] || '#2357A3'
   }
 
   const { firstDay, daysInMonth, year, month } = getDaysInMonth(calMonth)
@@ -118,7 +121,6 @@ export default function Schedule() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div style={{ fontSize: '20px', fontWeight: 700, color: '#1a1a1a' }}>Schedule</div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          {/* View toggle */}
           <div style={{ display: 'flex', background: '#f0f0f0', borderRadius: '8px', padding: '3px' }}>
             <button onClick={() => setView('list')} style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', fontSize: '12px', fontWeight: 600, cursor: 'pointer', background: view === 'list' ? 'white' : 'transparent', color: view === 'list' ? '#2357A3' : '#888', boxShadow: view === 'list' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>List</button>
             <button onClick={() => setView('calendar')} style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', fontSize: '12px', fontWeight: 600, cursor: 'pointer', background: view === 'calendar' ? 'white' : 'transparent', color: view === 'calendar' ? '#2357A3' : '#888', boxShadow: view === 'calendar' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>Calendar</button>
@@ -127,10 +129,19 @@ export default function Schedule() {
         </div>
       </div>
 
-      {/* Add/Edit Form */}
+      {/* Form */}
       {showForm && (
         <div style={{ background: 'white', border: '0.5px solid #ddd', borderRadius: '10px', padding: '20px', marginBottom: '24px' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, color: '#2357A3', marginBottom: '14px' }}>{editId ? 'EDIT SHIFT' : 'NEW SHIFT'}</div>
+          <div style={{ marginBottom: '10px' }}>
+            <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>ASSIGN TO</div>
+            <select value={assignedTo} onChange={e => setAssignedTo(e.target.value)} style={inp}>
+              <option value="">— Select staff member —</option>
+              {staffList.map(st => (
+                <option key={st.id} value={st.user_id || ''}>{st.full_name} ({st.role})</option>
+              ))}
+            </select>
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
             <div>
               <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>DATE</div>
@@ -159,19 +170,16 @@ export default function Schedule() {
       {/* CALENDAR VIEW */}
       {view === 'calendar' && (
         <div style={{ background: 'white', border: '0.5px solid #ddd', borderRadius: '12px', overflow: 'hidden' }}>
-          {/* Month nav */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '0.5px solid #eee' }}>
             <button onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1))} style={{ background: 'none', border: '1px solid #ddd', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '14px' }}>‹</button>
             <div style={{ fontSize: '15px', fontWeight: 700, color: '#1a1a1a' }}>{monthName}</div>
             <button onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1))} style={{ background: 'none', border: '1px solid #ddd', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '14px' }}>›</button>
           </div>
-          {/* Day headers */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '0.5px solid #eee' }}>
             {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
               <div key={d} style={{ padding: '8px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: '#888' }}>{d}</div>
             ))}
           </div>
-          {/* Calendar grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
             {Array.from({ length: firstDay }).map((_, i) => (
               <div key={`empty-${i}`} style={{ minHeight: '80px', borderRight: '0.5px solid #f0f0f0', borderBottom: '0.5px solid #f0f0f0', background: '#fafafa' }} />
