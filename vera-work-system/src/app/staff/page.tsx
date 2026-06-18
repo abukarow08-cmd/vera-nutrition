@@ -16,15 +16,15 @@ export default function StaffDashboard() {
       const role = data.user.user_metadata?.role
       if (role === 'owner' || role === 'manager') { router.push('/dashboard'); return }
       setUser(data.user)
-      fetchData()
+      fetchData(data.user.id)
     })
   }, [])
 
-  async function fetchData() {
+  async function fetchData(userId: string) {
     const today = new Date().toISOString().slice(0, 10)
-    const { data: t } = await supabase.from('tasks').select('*').eq('status', 'pending').order('due_date')
+    const { data: t } = await supabase.from('tasks').select('*').eq('status', 'pending').eq('assigned_to', userId).order('due_date')
     setTasks(t || [])
-    const { data: s } = await supabase.from('schedules').select('*').gte('shift_date', today).order('shift_date').limit(7)
+    const { data: s } = await supabase.from('schedules').select('*').gte('shift_date', today).eq('assigned_to', userId).order('shift_date').limit(7)
     setShifts(s || [])
     setLoading(false)
   }
