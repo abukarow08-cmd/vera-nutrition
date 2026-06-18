@@ -69,7 +69,7 @@ export default function StaffPage() {
     try {
       const res = await fetch('/api/create-user', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-secret': ’SommarochSol2026!’ },
         body: JSON.stringify({ full_name: authName, email: authEmail, password: authPassword, role: authRole })
       })
       const data = await res.json()

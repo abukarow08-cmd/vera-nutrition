@@ -3,6 +3,11 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
+    const authHeader = request.headers.get('x-api-secret')
+    if (authHeader !== process.env.API_SECRET) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { full_name, email, password, role } = await request.json()
 
     if (!full_name || !email || !password || !role) {
@@ -14,7 +19,6 @@ export async function POST(request: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // Create auth user
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -28,7 +32,6 @@ export async function POST(request: Request) {
 
     const userId = authData.user.id
 
-    // Insert into profiles
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .insert({ id: userId, full_name, email, role })
@@ -37,7 +40,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: profileError.message }, { status: 400 })
     }
 
-    // Insert into staff
     const { error: staffError } = await supabaseAdmin
       .from('staff')
       .insert({ user_id: userId, full_name, email, role })
