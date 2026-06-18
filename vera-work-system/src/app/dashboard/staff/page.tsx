@@ -120,7 +120,7 @@ export default function Staff() {
                 </div>
                 {s.salary && <div style={{fontSize:'12px',color:'#142F5C',fontWeight:600}}>${Number(s.salary).toFixed(0)}/mo</div>}
                 <span style={{fontSize:'9px',padding:'2px 10px',borderRadius:'20px',fontWeight:700,background:roleBg(s.role),color:roleColor(s.role)}}>{s.role}</span>
-                <button onClick={()=>startEdit(s)} style={{fontSize:'11px',color:'#2357A3',background:'none',border:'none',cursor:'pointer',padding:'2px 6px'}}>Edit</button>
+                <button onClick={()=>router.push(`/dashboard/staff/${s.id}`)} style={{fontSize:'11px',color:'#16a34a',background:'none',border:'none',cursor:'pointer',padding:'2px 6px'}}>View Profile</button><button onClick={()=>startEdit(s)} style={{fontSize:'11px',color:'#2357A3',background:'none',border:'none',cursor:'pointer',padding:'2px 6px'}}>Edit</button>
                 <button onClick={()=>deleteStaff(s.id)} style={{fontSize:'11px',color:'#A32D2D',background:'none',border:'none',cursor:'pointer',padding:'2px 6px'}}>Delete</button>
               </div>
             ))}
