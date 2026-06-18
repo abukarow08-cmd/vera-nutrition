@@ -31,7 +31,7 @@ export default function StaffDashboard() {
 
   async function toggleTask(id: string, status: string) {
     await supabase.from('tasks').update({ status: status === 'done' ? 'pending' : 'done' }).eq('id', id)
-    fetchData()
+    fetchData(user?.id || '')
   }
 
   function formatDate(dateStr: string) {
