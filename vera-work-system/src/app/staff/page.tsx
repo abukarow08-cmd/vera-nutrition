@@ -24,7 +24,7 @@ export default function StaffDashboard() {
     const today = new Date().toISOString().slice(0, 10)
     const { data: t } = await supabase.from('tasks').select('*').eq('status', 'pending').eq('assigned_to', userId).order('due_date')
     setTasks(t || [])
-    const { data: s } = await supabase.from('schedules').select('*').gte('date', today).eq('assigned_to', userId).order('date').limit(7)
+    const { data: s } = await supabase.from('schedules').select('*').gte('shift_date', today).eq('assigned_to', userId).order('shift_date').limit(7)
     setShifts(s || [])
     setLoading(false)
   }
@@ -39,8 +39,8 @@ export default function StaffDashboard() {
     return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   }
 
-  const todayShifts = shifts.filter(s => s.date === new Date().toISOString().slice(0, 10))
-  const upcomingShifts = shifts.filter(s => s.date > new Date().toISOString().slice(0, 10))
+  const todayShifts = shifts.filter(s => s.shift_date === new Date().toISOString().slice(0, 10))
+  const upcomingShifts = shifts.filter(s => s.shift_date > new Date().toISOString().slice(0, 10))
   const staffName = user?.email?.split('@')[0] || 'Staff'
 
   return (
@@ -107,7 +107,7 @@ export default function StaffDashboard() {
             <div style={{color:'#aaa',fontSize:'13px'}}>No upcoming shifts</div>
           ) : upcomingShifts.map(shift => (
             <div key={shift.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #f5f5f5'}}>
-              <div style={{fontSize:'13px',color:'#333',fontWeight:500}}>{formatDate(shift.date)}</div>
+              <div style={{fontSize:'13px',color:'#333',fontWeight:500}}>{formatDate(shift.shift_date)}</div>
               <div style={{fontSize:'12px',color:'#666'}}>{shift.start_time} – {shift.end_time}</div>
             </div>
           ))}

@@ -17,14 +17,12 @@ export default function StaffProfile() {
   const [schedules, setSchedules] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Task form
   const [showTaskForm, setShowTaskForm] = useState(false)
   const [taskTitle, setTaskTitle] = useState('')
   const [taskPriority, setTaskPriority] = useState<'low'|'medium'|'high'>('medium')
   const [taskDueDate, setTaskDueDate] = useState('')
   const [taskLoading, setTaskLoading] = useState(false)
 
-  // Schedule form
   const [showShiftForm, setShowShiftForm] = useState(false)
   const [shiftDate, setShiftDate] = useState('')
   const [shiftStart, setShiftStart] = useState('')
@@ -41,14 +39,12 @@ export default function StaffProfile() {
     setLoading(true)
     const { data: m } = await supabase.from('staff').select('*').eq('id', staffId).single()
     setMember(m)
-
     if (m?.user_id) {
       const { data: t } = await supabase.from('tasks').select('*').eq('assigned_to', m.user_id).order('created_at', { ascending: false })
       setTasks(t || [])
-      const { data: s } = await supabase.from('schedules').select('*').eq('assigned_to', m.user_id).order('date', { ascending: true })
+      const { data: s } = await supabase.from('schedules').select('*').eq('assigned_to', m.user_id).order('shift_date', { ascending: true })
       setSchedules(s || [])
     }
-
     setLoading(false)
   }
 
@@ -75,7 +71,7 @@ export default function StaffProfile() {
   async function saveShift() {
     if (!shiftDate || !shiftStart || !shiftEnd || !member?.user_id) return
     setShiftLoading(true)
-    await supabase.from('schedules').insert({ date: shiftDate, start_time: shiftStart, end_time: shiftEnd, notes: shiftNote || null, assigned_to: member.user_id })
+    await supabase.from('schedules').insert({ shift_date: shiftDate, start_time: shiftStart, end_time: shiftEnd, notes: shiftNote || null, assigned_to: member.user_id })
     setShiftDate(''); setShiftStart(''); setShiftEnd(''); setShiftNote('')
     setShowShiftForm(false); setShiftLoading(false)
     fetchAll()
@@ -94,37 +90,32 @@ export default function StaffProfile() {
 
   return (
     <div style={{padding:'24px',maxWidth:'860px',margin:'0 auto'}}>
-
-      <button onClick={() => router.push('/dashboard/staff')} style={{marginBottom:'20px',background:'none',border:'none',color:'#2357A3',fontSize:'13px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}>
+      <button onClick={() => router.push('/dashboard/staff')} style={{marginBottom:'20px',background:'none',border:'none',color:'#2357A3',fontSize:'13px',cursor:'pointer'}}>
         ← Back to Staff
       </button>
 
-      {/* Profile Card */}
       <div style={{background:'white',border:'0.5px solid #ddd',borderRadius:'12px',padding:'24px',marginBottom:'24px',display:'flex',alignItems:'center',gap:'20px'}}>
         <div style={{width:'64px',height:'64px',borderRadius:'50%',background:'#2357A3',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'24px',fontWeight:700,color:'white',flexShrink:0}}>
           {member.full_name?.charAt(0).toUpperCase()}
         </div>
         <div style={{flex:1}}>
           <div style={{fontSize:'20px',fontWeight:700,color:'#1a1a1a',marginBottom:'4px'}}>{member.full_name}</div>
-          <div style={{fontSize:'13px',color:'#888',marginBottom:'8px'}}>{member.email} {member.phone ? `· ${member.phone}` : ''}</div>
+          <div style={{fontSize:'13px',color:'#888',marginBottom:'8px'}}>{member.email}{member.phone ? ` · ${member.phone}` : ''}</div>
           <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
             <span style={{fontSize:'11px',padding:'2px 10px',borderRadius:'20px',background:roleColor(member.role),color:'white',fontWeight:700}}>{member.role}</span>
             {member.salary && <span style={{fontSize:'11px',padding:'2px 10px',borderRadius:'20px',background:'#f0fdf4',color:'#16a34a',fontWeight:600}}>${Number(member.salary).toFixed(0)}/mo</span>}
             {member.start_date && <span style={{fontSize:'11px',padding:'2px 10px',borderRadius:'20px',background:'#f8f8f8',color:'#888'}}>Started {new Date(member.start_date).toLocaleDateString()}</span>}
           </div>
-          {!member.user_id && <div style={{marginTop:'8px',fontSize:'11px',color:'#ef4444',background:'#fef2f2',padding:'4px 10px',borderRadius:'6px',display:'inline-block'}}>⚠️ No auth account linked — tasks/shifts cannot be assigned</div>}
+          {!member.user_id && <div style={{marginTop:'8px',fontSize:'11px',color:'#ef4444',background:'#fef2f2',padding:'4px 10px',borderRadius:'6px',display:'inline-block'}}>⚠️ No auth account linked</div>}
         </div>
       </div>
 
-      {/* Tasks Section */}
+      {/* Tasks */}
       <div style={{background:'white',border:'0.5px solid #ddd',borderRadius:'12px',padding:'20px',marginBottom:'24px'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
           <div style={{fontSize:'14px',fontWeight:700,color:'#2357A3',letterSpacing:'1px'}}>TASKS</div>
-          <button onClick={() => setShowTaskForm(!showTaskForm)} style={{background:'#2357A3',color:'white',border:'none',padding:'6px 14px',borderRadius:'6px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}>
-            + Add Task
-          </button>
+          <button onClick={() => setShowTaskForm(!showTaskForm)} style={{background:'#2357A3',color:'white',border:'none',padding:'6px 14px',borderRadius:'6px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}>+ Add Task</button>
         </div>
-
         {showTaskForm && (
           <div style={{background:'#f8f8f8',borderRadius:'8px',padding:'16px',marginBottom:'16px'}}>
             <div style={{marginBottom:'8px'}}>
@@ -146,20 +137,17 @@ export default function StaffProfile() {
               </div>
             </div>
             <div style={{display:'flex',gap:'8px'}}>
-              <button onClick={saveTask} disabled={taskLoading} style={{background:'#F5A623',color:'white',border:'none',padding:'8px 20px',borderRadius:'6px',fontSize:'13px',fontWeight:700,cursor:'pointer'}}>
-                {taskLoading ? 'Saving...' : 'Save Task'}
-              </button>
+              <button onClick={saveTask} disabled={taskLoading} style={{background:'#F5A623',color:'white',border:'none',padding:'8px 20px',borderRadius:'6px',fontSize:'13px',fontWeight:700,cursor:'pointer'}}>{taskLoading ? 'Saving...' : 'Save Task'}</button>
               <button onClick={() => setShowTaskForm(false)} style={{background:'#eee',color:'#666',border:'none',padding:'8px 16px',borderRadius:'6px',fontSize:'13px',cursor:'pointer'}}>Cancel</button>
             </div>
           </div>
         )}
-
         {tasks.length === 0 && <div style={{textAlign:'center',color:'#888',fontSize:'13px',padding:'20px 0'}}>No tasks assigned yet.</div>}
         {tasks.map(t => (
           <div key={t.id} style={{display:'flex',alignItems:'center',gap:'10px',padding:'10px 0',borderBottom:'0.5px solid #eee'}}>
             <input type="checkbox" checked={t.status === 'done'} onChange={() => toggleTask(t)} style={{width:'16px',height:'16px',cursor:'pointer',flexShrink:0}} />
             <div style={{flex:1}}>
-              <div style={{fontSize:'13px',color: t.status === 'done' ? '#aaa' : '#1a1a1a',textDecoration: t.status === 'done' ? 'line-through' : 'none',fontWeight:500}}>{t.title}</div>
+              <div style={{fontSize:'13px',color:t.status==='done'?'#aaa':'#1a1a1a',textDecoration:t.status==='done'?'line-through':'none',fontWeight:500}}>{t.title}</div>
               {t.due_date && <div style={{fontSize:'11px',color:'#888',marginTop:'2px'}}>Due {new Date(t.due_date).toLocaleDateString()}</div>}
             </div>
             <span style={{fontSize:'11px',padding:'2px 8px',borderRadius:'20px',background:priorityBg(t.priority),color:priorityColor(t.priority),fontWeight:600}}>{t.priority}</span>
@@ -168,15 +156,12 @@ export default function StaffProfile() {
         ))}
       </div>
 
-      {/* Schedule Section */}
+      {/* Schedule */}
       <div style={{background:'white',border:'0.5px solid #ddd',borderRadius:'12px',padding:'20px'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
           <div style={{fontSize:'14px',fontWeight:700,color:'#2357A3',letterSpacing:'1px'}}>SCHEDULE</div>
-          <button onClick={() => setShowShiftForm(!showShiftForm)} style={{background:'#2357A3',color:'white',border:'none',padding:'6px 14px',borderRadius:'6px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}>
-            + Add Shift
-          </button>
+          <button onClick={() => setShowShiftForm(!showShiftForm)} style={{background:'#2357A3',color:'white',border:'none',padding:'6px 14px',borderRadius:'6px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}>+ Add Shift</button>
         </div>
-
         {showShiftForm && (
           <div style={{background:'#f8f8f8',borderRadius:'8px',padding:'16px',marginBottom:'16px'}}>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'8px',marginBottom:'8px'}}>
@@ -198,14 +183,11 @@ export default function StaffProfile() {
               <input value={shiftNote} onChange={e => setShiftNote(e.target.value)} placeholder="e.g. Morning shift" style={inputStyle} />
             </div>
             <div style={{display:'flex',gap:'8px'}}>
-              <button onClick={saveShift} disabled={shiftLoading} style={{background:'#F5A623',color:'white',border:'none',padding:'8px 20px',borderRadius:'6px',fontSize:'13px',fontWeight:700,cursor:'pointer'}}>
-                {shiftLoading ? 'Saving...' : 'Save Shift'}
-              </button>
+              <button onClick={saveShift} disabled={shiftLoading} style={{background:'#F5A623',color:'white',border:'none',padding:'8px 20px',borderRadius:'6px',fontSize:'13px',fontWeight:700,cursor:'pointer'}}>{shiftLoading ? 'Saving...' : 'Save Shift'}</button>
               <button onClick={() => setShowShiftForm(false)} style={{background:'#eee',color:'#666',border:'none',padding:'8px 16px',borderRadius:'6px',fontSize:'13px',cursor:'pointer'}}>Cancel</button>
             </div>
           </div>
         )}
-
         {schedules.length === 0 && <div style={{textAlign:'center',color:'#888',fontSize:'13px',padding:'20px 0'}}>No shifts scheduled yet.</div>}
         {schedules.map(s => (
           <div key={s.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:'0.5px solid #eee'}}>
@@ -213,14 +195,13 @@ export default function StaffProfile() {
               <span style={{fontSize:'18px'}}>📅</span>
             </div>
             <div style={{flex:1}}>
-              <div style={{fontSize:'13px',fontWeight:600,color:'#1a1a1a'}}>{new Date(s.date).toLocaleDateString('en-GB', {weekday:'short',day:'numeric',month:'short'})}</div>
-              <div style={{fontSize:'11px',color:'#888',marginTop:'2px'}}>{s.start_time} – {s.end_time}{s.notes ? ` · ${s.notes}` : ''}</div>
+              <div style={{fontSize:'13px',fontWeight:600,color:'#1a1a1a'}}>{new Date(s.shift_date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div>
+              <div style={{fontSize:'11px',color:'#888',marginTop:'2px'}}>{s.start_time} – {s.end_time}{s.notes?` · ${s.notes}`:''}</div>
             </div>
             <button onClick={() => deleteShift(s.id)} style={{fontSize:'11px',color:'#A3202D',background:'none',border:'none',cursor:'pointer'}}>Delete</button>
           </div>
         ))}
       </div>
-
     </div>
   )
 }
