@@ -42,19 +42,20 @@ export default function StaffProfile() {
     const { data: m } = await supabase.from('staff').select('*').eq('id', staffId).single()
     setMember(m)
 
-    const { data: t } = await supabase.from('tasks').select('*').eq('assigned_to', staffId).order('created_at', { ascending: false })
-    setTasks(t || [])
-
-    const { data: s } = await supabase.from('schedules').select('*').eq('assigned_to', staffId).order('date', { ascending: true })
-    setSchedules(s || [])
+    if (m?.user_id) {
+      const { data: t } = await supabase.from('tasks').select('*').eq('assigned_to', m.user_id).order('created_at', { ascending: false })
+      setTasks(t || [])
+      const { data: s } = await supabase.from('schedules').select('*').eq('assigned_to', m.user_id).order('date', { ascending: true })
+      setSchedules(s || [])
+    }
 
     setLoading(false)
   }
 
   async function saveTask() {
-    if (!taskTitle) return
+    if (!taskTitle || !member?.user_id) return
     setTaskLoading(true)
-    await supabase.from('tasks').insert({ title: taskTitle, priority: taskPriority, due_date: taskDueDate || null, assigned_to: staffId, status: 'pending' })
+    await supabase.from('tasks').insert({ title: taskTitle, priority: taskPriority, due_date: taskDueDate || null, assigned_to: member.user_id, status: 'pending' })
     setTaskTitle(''); setTaskPriority('medium'); setTaskDueDate('')
     setShowTaskForm(false); setTaskLoading(false)
     fetchAll()
@@ -72,9 +73,9 @@ export default function StaffProfile() {
   }
 
   async function saveShift() {
-    if (!shiftDate || !shiftStart || !shiftEnd) return
+    if (!shiftDate || !shiftStart || !shiftEnd || !member?.user_id) return
     setShiftLoading(true)
-    await supabase.from('schedules').insert({ date: shiftDate, start_time: shiftStart, end_time: shiftEnd, notes: shiftNote || null, assigned_to: staffId })
+    await supabase.from('schedules').insert({ date: shiftDate, start_time: shiftStart, end_time: shiftEnd, notes: shiftNote || null, assigned_to: member.user_id })
     setShiftDate(''); setShiftStart(''); setShiftEnd(''); setShiftNote('')
     setShowShiftForm(false); setShiftLoading(false)
     fetchAll()
@@ -94,7 +95,6 @@ export default function StaffProfile() {
   return (
     <div style={{padding:'24px',maxWidth:'860px',margin:'0 auto'}}>
 
-      {/* Back */}
       <button onClick={() => router.push('/dashboard/staff')} style={{marginBottom:'20px',background:'none',border:'none',color:'#2357A3',fontSize:'13px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}>
         ← Back to Staff
       </button>
@@ -112,6 +112,7 @@ export default function StaffProfile() {
             {member.salary && <span style={{fontSize:'11px',padding:'2px 10px',borderRadius:'20px',background:'#f0fdf4',color:'#16a34a',fontWeight:600}}>${Number(member.salary).toFixed(0)}/mo</span>}
             {member.start_date && <span style={{fontSize:'11px',padding:'2px 10px',borderRadius:'20px',background:'#f8f8f8',color:'#888'}}>Started {new Date(member.start_date).toLocaleDateString()}</span>}
           </div>
+          {!member.user_id && <div style={{marginTop:'8px',fontSize:'11px',color:'#ef4444',background:'#fef2f2',padding:'4px 10px',borderRadius:'6px',display:'inline-block'}}>⚠️ No auth account linked — tasks/shifts cannot be assigned</div>}
         </div>
       </div>
 
