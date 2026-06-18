@@ -165,7 +165,7 @@ export default function StaffDashboard() {
                       <div style={{fontSize:'11px',fontWeight:isToday?700:400,color:isToday?'#2357A3':'#666',marginBottom:'2px'}}>{day}</div>
                       {dayShifts.map(s => (
                         <div key={s.id} style={{background:'#2357A3',color:'white',borderRadius:'3px',padding:'1px 4px',fontSize:'9px',fontWeight:600,marginBottom:'1px'}}>
-                          {s.start_time?.slice(0,5)}
+                {s.start_time?.slice(0,5)}{s.end_time ? ` -${s.end_time.slice(0,5)}` : ""}
                         </div>
                       ))}
                     </div>
