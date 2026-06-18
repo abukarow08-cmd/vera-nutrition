@@ -183,7 +183,7 @@ export default function Schedule() {
               const isToday = dateStr === today
               return (
                 <div key={day} style={{ minHeight: '80px', borderRight: '0.5px solid #f0f0f0', borderBottom: '0.5px solid #f0f0f0', padding: '6px', background: isToday ? '#EEF4FF' : 'white' }}>
-                  <div style={{ fontSize: '12px', fontWeight: isToday ? 700 : 400, color: isToday ? '#2357A3' : '#1a1a1a', marginBottom: '4px', width: '22px', height: '22px', borderRadius: '50%', background: isToday ? '#2357A3' : 'transparent', color: isToday ? 'white' : '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{day}</div>
+                  <div style={{ fontSize: '12px', fontWeight: isToday ? 700 : 400, marginBottom: '4px', width: '22px', height: '22px', borderRadius: '50%', background: isToday ? '#2357A3' : 'transparent', color: isToday ? 'white' : '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{day}</div>
                   {dayShifts.map(s => (
                     <div key={s.id} style={{ background: getStaffColor(s.assigned_to), color: 'white', borderRadius: '4px', padding: '2px 5px', fontSize: '10px', fontWeight: 600, marginBottom: '2px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
                       {getStaffName(s)} {s.start_time?.slice(0,5)}
