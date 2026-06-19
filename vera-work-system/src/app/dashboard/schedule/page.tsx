@@ -208,18 +208,31 @@ export default function Schedule() {
       {/* LIST VIEW */}
       {view === 'list' && (
         <div>
-          <div style={{ background: 'white', border: '0.5px solid #ddd', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px' }}>
-            <div style={{ padding: '14px 16px', borderBottom: '0.5px solid #eee', fontSize: '10px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px' }}>TODAY — {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}</div>
-            {todayShifts.length === 0 ? <div style={{ padding: '20px', textAlign: 'center', color: '#888', fontSize: '13px' }}>No shifts today.</div> : todayShifts.map(s => <ShiftRow key={s.id} s={s} badge="On Shift" bg="#dcfce7" color="#16a34a" />)}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            {(['all','today','upcoming','past'] as const).map(f => (
+              <button key={f} onClick={() => setFilter(f)} style={{ padding: '6px 14px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600, background: filter === f ? '#2357A3' : '#E8F1F9', color: filter === f ? 'white' : '#2357A3' }}>
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
           </div>
-          <div style={{ background: 'white', border: '0.5px solid #ddd', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px' }}>
-            <div style={{ padding: '14px 16px', borderBottom: '0.5px solid #eee', fontSize: '10px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px' }}>UPCOMING SHIFTS</div>
-            {upcomingShifts.length === 0 ? <div style={{ padding: '20px', textAlign: 'center', color: '#888', fontSize: '13px' }}>No upcoming shifts.</div> : upcomingShifts.map(s => <ShiftRow key={s.id} s={s} badge="Upcoming" bg="#dbeafe" color="#1d4ed8" />)}
-          </div>
-          <div style={{ background: 'white', border: '0.5px solid #ddd', borderRadius: '10px', overflow: 'hidden' }}>
-            <div style={{ padding: '14px 16px', borderBottom: '0.5px solid #eee', fontSize: '10px', fontWeight: 700, color: '#888', letterSpacing: '1px' }}>PAST SHIFTS</div>
-            {pastShifts.length === 0 ? <div style={{ padding: '20px', textAlign: 'center', color: '#888', fontSize: '13px' }}>No past shifts.</div> : pastShifts.map(s => <ShiftRow key={s.id} s={s} badge="Past" bg="#f3f4f6" color="#6b7280" />)}
-          </div>
+          {(filter === 'all' || filter === 'today') && (
+            <div style={{ background: 'white', border: '0.5px solid #ddd', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px' }}>
+              <div style={{ padding: '14px 16px', borderBottom: '0.5px solid #eee', fontSize: '10px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px' }}>TODAY — {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}</div>
+              {todayShifts.length == 0 ? <div style={{ padding: '20px', textAlign: 'center', color: '#888', fontSize: '13px' }}>No shifts today.</div> : todayShifts.map(s => <ShiftRow key={s.id} s={s} badge="On Shift" bg="#dcfce7" color="#16a34a" />)}
+            </div>
+          )}
+          {(filter === 'all' || filter === 'upcoming') && (
+            <div style={{ background: 'white', border: '0.5px solid #ddd', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px' }}>
+              <div style={{ padding: '14px 16px', borderBottom: '0.5px solid #eee', fontSize: '10px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px' }}>UPCOMING SHIFTS</div>
+              {upcomingShifts.length == 0 ? <div style={{ padding: '20px', textAlign: 'center', color: '#888', fontSize: '13px' }}>No upcoming shifts.</div> : upcomingShifts.map(s => <ShiftRow key={s.id} s={s} badge="Upcoming" bg="#dbeafe" color="#1d4ed8" />)}
+            </div>
+          )}
+          {(filter === 'all' || filter === 'past') && (
+            <div style={{ background: 'white', border: '0.5px solid #ddd', borderRadius: '10px', overflow: 'hidden' }}>
+              <div style={{ padding: '14px 16px', borderBottom: '0.5px solid #eee', fontSize: '10px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px' }}>PAST SHIFTS</div>
+              {pastShifts.length == 0 ? <div style={{ padding: '20px', textAlign: 'center', color: '#888', fontSize: '13px' }}>No past shifts.</div> : pastShifts.map(s => <ShiftRow key={s.id} s={s} badge="Past" bg="#f3f4f6" color="#6b7280" />)}
+            </div>
+          )}
         </div>
       )}
     </div>
