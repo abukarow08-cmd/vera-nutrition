@@ -10,6 +10,7 @@ export default function Dashboard() {
   const [totalOut, setTotalOut] = useState(0)
   const [openTasks, setOpenTasks] = useState(0)
   const [overdueTasks, setOverdueTasks] = useState(0)
+  const [overdueTaskList, setOverdueTaskList] = useState<any[]>([])
   const [recentTasks, setRecentTasks] = useState<any[]>([])
   const [todayStaff, setTodayStaff] = useState<any[]>([])
   const [todayFinance, setTodayFinance] = useState<any[]>([])
@@ -52,7 +53,9 @@ export default function Dashboard() {
     const { data: tasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false })
     if (tasks) {
       setOpenTasks(tasks.filter((t: any) => t.status === 'pending').length)
-      setOverdueTasks(tasks.filter((t: any) => t.status === 'pending' && t.due_date && t.due_date < today).length)
+      const overdueList = tasks.filter((t: any) => t.status === 'pending' && t.due_date && t.due_date < today)
+    setOverdueTasks(overdueList.length)
+    setOverdueTaskList(overdueList)
       setRecentTasks(tasks.slice(0, 4))
     }
 
@@ -116,17 +119,26 @@ export default function Dashboard() {
       <div style={{ flex: 1, background: '#F0F4F8', overflowY: 'auto' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           {overdueTasks > 0 && (
-            <div style={{ margin: '0 0 20px 0', padding: '12px 20px', background: '#FEF2F2', borderRadius: '8px', border: '1px solid #FECACA', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '18px' }}>⚠️</span>
-              <div style={{ flex: 1 }}>
+            <div style={{ margin: '0 0 20px 0', padding: '14px 20px', background: '#FEF2F2', borderRadius: '8px', border: '1px solid #FECACA' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: overdueTaskList.length > 0 ? '10px' : '0' }}>
+                <span style={{ fontSize: '18px' }}>⚠️</span>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: '#DC2626' }}>
-                  {overdueTasks} overdue task{overdueTasks > 1 ? 's' : ''}
+                  {overdueTasks} overdue task{overdueTasks > 1 ? 's' : ''} — please review and action
                 </span>
-                <span style={{ fontSize: '13px', color: '#991B1B', marginLeft: '6px' }}>
-                  — please review and action
-                </span>
+                <a href="/dashboard/tasks" style={{ marginLeft: 'auto', fontSize: '12px', fontWeight: 700, color: '#DC2626', textDecoration: 'none', padding: '4px 12px', border: '1px solid #DC2626', borderRadius: '6px' }}>View Tasks →</a>
               </div>
-              <a href="/dashboard/tasks" style={{ fontSize: '12px', fontWeight: 700, color: '#DC2626', textDecoration: 'none', padding: '4px 12px', border: '1px solid #DC2626', borderRadius: '6px' }}>View Tasks →</a>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {overdueTaskList.map((t: any) => (
+                  <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'white', borderRadius: '6px', border: '1px solid #FECACA' }}>
+                    <span style={{ fontSize: '11px', color: '#DC2626' }}>●</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#333' }}>{t.title}</span>
+                    <span style={{ fontSize: '11px', color: '#888', marginLeft: '4px' }}>Due: {t.due_date}</span>
+                    {t.assigned_to && profileMap[t.assigned_to] && (
+                      <span style={{ fontSize: '11px', color: '#2357A3', marginLeft: 'auto' }}>→ {profileMap[t.assigned_to]}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           <div style={{ fontSize: '20px', fontWeight: 700, color: '#142F5C' }}>Dashboard</div>
