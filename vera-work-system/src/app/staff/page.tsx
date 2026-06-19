@@ -56,7 +56,8 @@ export default function StaffDashboard() {
       date: today,
       clock_in: new Date().toISOString()
     }).select().single()
-    if (!error) setAttendance(data)
+    if (error) { console.error('Clock in error:', error); alert('Error: ' + error.message) }
+    else setAttendance(data)
     setClockLoading(false)
   }
 
@@ -66,7 +67,8 @@ export default function StaffDashboard() {
     const { data, error } = await supabase.from('attendance').update({
       clock_out: new Date().toISOString()
     }).eq('id', attendance.id).select().single()
-    if (!error) setAttendance(data)
+    if (error) { console.error('Clock in error:', error); alert('Error: ' + error.message) }
+    else setAttendance(data)
     setClockLoading(false)
   }
 
