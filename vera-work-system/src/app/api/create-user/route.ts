@@ -3,11 +3,6 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const authHeader = request.headers.get('x-api-secret')
-    if (authHeader !== process.env.API_SECRET) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { full_name, email, password, role } = await request.json()
 
     if (!full_name || !email || !password || !role) {
