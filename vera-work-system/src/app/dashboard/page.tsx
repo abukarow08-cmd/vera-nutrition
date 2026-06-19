@@ -76,7 +76,7 @@ export default function Dashboard() {
   const navSections = [
     { label: 'MAIN', items: [['Dashboard', '/dashboard'], ['Finance', '/dashboard/finance'], ['Tasks', '/dashboard/tasks'], ['Schedule', '/dashboard/schedule']] },
     { label: 'STORE', items: [['Inventory', '/dashboard/inventory'], ['Shipping', '/dashboard/shipping']] },
-    { label: 'PEOPLE', items: [['Staff / HR', '/dashboard/staff'], ['Documents', '/dashboard/documents']] },
+    { label: 'PEOPLE', items: [['Staff / HR', '/dashboard/staff'], ['Documents', '/dashboard/documents'], ['Attendance', '/dashboard/attendance']] },
   ]
 
   return (
