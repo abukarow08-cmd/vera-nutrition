@@ -1,10 +1,27 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
+import { createServerClient } from '@supabase/ssr'
 
 export async function POST(request: Request) {
   try {
-    const { full_name, email, password, role } = await request.json()
+    // Auth check — verify caller is a logged-in owner or manager
+    const cookieStore = cookies()
+    const supabaseAuth = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { get: (name) => cookieStore.get(name)?.value } }
+    )
+    const { data: { user } } = await supabaseAuth.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const { data: profile } = await supabaseAuth.from('profiles').select('role').eq('id', user.id).single()
+    if (!profile || !['owner', 'manager'].includes(profile.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
+    const { full_name, email, password, role } = await request.json()
     if (!full_name || !email || !password || !role) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 })
     }
