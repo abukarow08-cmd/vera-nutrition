@@ -46,7 +46,7 @@ export default function Dashboard() {
     setTodayFinance(todayFin || [])
 
     // Tasks with assigned profile name
-    const { data: tasks } = await supabase.from('tasks').select('*, profiles(full_name)').order('created_at', { ascending: false })
+    const { data: tasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false })
     if (tasks) {
       setOpenTasks(tasks.filter((t: any) => t.status === 'pending').length)
       setOverdueTasks(tasks.filter((t: any) => t.status === 'pending' && t.due_date && t.due_date < today).length)
@@ -54,8 +54,11 @@ export default function Dashboard() {
     }
 
     // Today schedule with profile name
-    const { data: shifts } = await supabase.from('schedules').select('*, profiles(full_name)').eq('shift_date', today)
-    setTodayStaff(shifts || [])
+    const { data: shifts } = await supabase.from('schedules').select('*').eq('shift_date', today)
+    const { data: profilesData } = await supabase.from('profiles').select('id, full_name')
+    const profileMap = Object.fromEntries((profilesData || []).map((p: any) => [p.id, p.full_name]))
+    const shiftsWithNames = (shifts || []).map((s: any) => ({ ...s, staff_name: profileMap[s.assigned_to] || 'Unknown' }))
+    setTodayStaff(shiftsWithNames)
   }
 
   const netProfit = totalIn - totalOut
@@ -138,7 +141,7 @@ export default function Dashboard() {
                     <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: task.priority === 'high' ? '#dc2626' : task.priority === 'medium' ? '#f59e0b' : '#6b7280', flexShrink: 0 }}></div>
                     <div>
                       <span style={{ fontSize: '13px', color: '#333' }}>{task.title}</span>
-                      {task.profiles?.full_name && (
+                      {profileMap[task.assigned_to] && (
                         <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>👤 {task.profiles.full_name}</div>
                       )}
                     </div>
@@ -158,10 +161,10 @@ export default function Dashboard() {
               ) : todayStaff.map((shift: any) => (
                 <div key={shift.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 0', borderBottom: '1px solid #f5f5f5' }}>
                   <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#E8F1F9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#2357A3', flexShrink: 0 }}>
-                    {getInitials(shift.profiles?.full_name || '?')}
+                    {getInitials(shift.staff_name || '?')}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#333' }}>{shift.profiles?.full_name || 'Unknown'}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#333' }}>{shift.staff_name || 'Unknown'}</div>
                     <div style={{ fontSize: '11px', color: '#888' }}>{shift.start_time} – {shift.end_time}</div>
                   </div>
                   <div style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }}></div>
