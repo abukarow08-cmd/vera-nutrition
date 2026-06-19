@@ -111,6 +111,13 @@ export default function Tasks() {
             </div>
           </div>
         )}
+          <div style={{display:'flex',gap:'8px',marginBottom:'16px'}}>
+            {(['all','pending','done'] as const).map(f => (
+              <button key={f} onClick={() => setTaskFilter(f)} style={{padding:'6px 14px',borderRadius:'20px',border:'none',cursor:'pointer',fontSize:'12px',fontWeight:600,background:taskFilter===f?'#2357A3':'#E8F1F9',color:taskFilter===f?'white':'#2357A3'}}>
+                {f.charAt(0).toUpperCase()+f.slice(1)}
+              </button>
+            ))}
+          </div>
 
         <div style={{background:'white',border:'0.5px solid #ddd',borderRadius:'10px',overflow:'hidden'}}>
           <div style={{padding:'14px 16px',borderBottom:'0.5px solid #eee',fontSize:'10px',fontWeight:700,color:'#2357A3',letterSpacing:'1px'}}>ALL TASKS</div>
