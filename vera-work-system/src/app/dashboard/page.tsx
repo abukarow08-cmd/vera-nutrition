@@ -115,6 +115,20 @@ export default function Dashboard() {
 
       <div style={{ flex: 1, background: '#F0F4F8', overflowY: 'auto' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {overdueTasks > 0 && (
+            <div style={{ margin: '0 0 20px 0', padding: '12px 20px', background: '#FEF2F2', borderRadius: '8px', border: '1px solid #FECACA', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '18px' }}>⚠️</span>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#DC2626' }}>
+                  {overdueTasks} overdue task{overdueTasks > 1 ? 's' : ''}
+                </span>
+                <span style={{ fontSize: '13px', color: '#991B1B', marginLeft: '6px' }}>
+                  — please review and action
+                </span>
+              </div>
+              <a href="/dashboard/tasks" style={{ fontSize: '12px', fontWeight: 700, color: '#DC2626', textDecoration: 'none', padding: '4px 12px', border: '1px solid #DC2626', borderRadius: '6px' }}>View Tasks →</a>
+            </div>
+          )}
           <div style={{ fontSize: '20px', fontWeight: 700, color: '#142F5C' }}>Dashboard</div>
           <div style={{ fontSize: '12px', color: '#888' }}>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
         </div>
