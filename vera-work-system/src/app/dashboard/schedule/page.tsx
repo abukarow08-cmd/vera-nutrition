@@ -19,6 +19,7 @@ export default function Schedule() {
   const [loading, setLoading] = useState(false)
   const [view, setView] = useState<'list'|'calendar'>('list')
   const [calMonth, setCalMonth] = useState(new Date())
+  const [filter, setFilter] = useState<'all'|'today'|'upcoming'|'past'>('all')
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => { if (!data.user) router.push('/') })
