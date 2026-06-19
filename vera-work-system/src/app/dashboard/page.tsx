@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [recentTasks, setRecentTasks] = useState<any[]>([])
   const [todayStaff, setTodayStaff] = useState<any[]>([])
   const [todayFinance, setTodayFinance] = useState<any[]>([])
+  const [profileMap, setProfileMap] = useState<Record<string,string>>({})
 
   useEffect(() => {
     async function init() {
@@ -57,6 +58,7 @@ export default function Dashboard() {
     const { data: shifts } = await supabase.from('schedules').select('*').eq('shift_date', today)
     const { data: profilesData } = await supabase.from('profiles').select('id, full_name')
     const profileMap = Object.fromEntries((profilesData || []).map((p: any) => [p.id, p.full_name]))
+    setProfileMap(profileMap)
     const shiftsWithNames = (shifts || []).map((s: any) => ({ ...s, staff_name: profileMap[s.assigned_to] || 'Unknown' }))
     setTodayStaff(shiftsWithNames)
   }
