@@ -64,9 +64,11 @@ export default function Tasks() {
     setEditId(t.id); setTitle(t.title); setPriority(t.priority); setDueDate(t.due_date?.slice(0,10)||''); setAssignedTo(t.assigned_to||''); setShowForm(true)
   }
 
-  const [taskFilter, setTaskFilter] = useState<'all'|'pending'|'done'>('all')
+  const [taskFilter, setTaskFilter] = useState<'all'|'pending'|'done'|'overdue'>('all')
+  const today = new Date().toISOString().slice(0, 10)
   const pending = tasks.filter(t => t.status === 'pending')
   const done = tasks.filter(t => t.status === 'done')
+  const overdue = tasks.filter(t => t.status === 'pending' && t.due_date && t.due_date.slice(0,10) < today)
 
   return (
     <div style={{flex:1, display:'flex', flexDirection:'column', background:'#F0F4F8'}}>
@@ -112,7 +114,7 @@ export default function Tasks() {
           </div>
         )}
           <div style={{display:'flex',gap:'8px',marginBottom:'16px'}}>
-            {(['all','pending','done'] as const).map(f => (
+            {(['all','pending','done','overdue'] as const).map(f => (
               <button key={f} onClick={() => setTaskFilter(f)} style={{padding:'6px 14px',borderRadius:'20px',border:'none',cursor:'pointer',fontSize:'12px',fontWeight:600,background:taskFilter===f?'#2357A3':'#E8F1F9',color:taskFilter===f?'white':'#2357A3'}}>
                 {f.charAt(0).toUpperCase()+f.slice(1)}
               </button>
@@ -122,8 +124,8 @@ export default function Tasks() {
         <div style={{background:'white',border:'0.5px solid #ddd',borderRadius:'10px',overflow:'hidden'}}>
           <div style={{padding:'14px 16px',borderBottom:'0.5px solid #eee',fontSize:'10px',fontWeight:700,color:'#2357A3',letterSpacing:'1px'}}>ALL TASKS</div>
           {tasks.length===0 && <div style={{padding:'32px',textAlign:'center',color:'#888',fontSize:'13px'}}>No tasks yet.</div>}
-          {tasks.filter(t=>taskFilter==='all'||t.status===taskFilter).map(t=>(
-            <div key={t.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'12px 16px',borderBottom:'0.5px solid #eee'}}>
+          {tasks.filter(t=>taskFilter==='overdue'?(t.status==='pending'&&t.due_date&&t.due_date.slice(0,10)<today):taskFilter==='all'||t.status===taskFilter).map(t=>(
+            <div key={t.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'12px 16px',borderBottom:'0.5px solid #eee',background:t.status==='pending'&&t.due_date&&t.due_date.slice(0,10)<today?'#FEF2F2':'white'}}>
               <div onClick={()=>toggleStatus(t)} style={{width:'18px',height:'18px',borderRadius:'4px',border:t.status==='done'?'none':'1.5px solid #ddd',background:t.status==='done'?'#2357A3':'white',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0}}>
                 {t.status==='done'&&<span style={{color:'white',fontSize:'11px'}}>✓</span>}
               </div>
