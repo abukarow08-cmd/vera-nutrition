@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [todayStaff, setTodayStaff] = useState<any[]>([])
   const [todayFinance, setTodayFinance] = useState<any[]>([])
   const [profileMap, setProfileMap] = useState<Record<string,string>>({})
+  const [todayAttendance, setTodayAttendance] = useState<any[]>([])
 
   useEffect(() => {
     async function init() {
@@ -58,6 +59,10 @@ export default function Dashboard() {
     // Today schedule
     const { data: shifts } = await supabase.from('schedules').select('*').eq('shift_date', today)
     setTodayStaff(shifts || [])
+
+    // Today attendance
+    const { data: attData } = await supabase.from('attendance').select('*').eq('date', today)
+    setTodayAttendance(attData || [])
   }
 
   const netProfit = totalIn - totalOut
@@ -182,6 +187,31 @@ export default function Dashboard() {
                 <span style={{ fontSize: '13px', fontWeight: 700, color: entry.type === 'in' ? '#16a34a' : '#dc2626' }}>{entry.type === 'in' ? '+' : '- '}${Number(entry.amount).toFixed(2)}</span>
               </div>
             ))}
+          </div>
+        </div>
+
+        <div style={{ background: 'white', borderRadius: '10px', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '14px' }}>CLOCKED IN TODAY</div>
+          {todayAttendance.length === 0 ? (
+            <div style={{ color: '#aaa', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>No staff clocked in yet</div>
+          ) : (
+            todayAttendance.map((att: any) => (
+              <div key={att.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid #f5f5f5' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#2357A3', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, flexShrink: 0 }}>
+                  {(profileMap[att.staff_id] || '?').split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#333' }}>{profileMap[att.staff_id] || 'Unknown'}</div>
+                  <div style={{ fontSize: '11px', color: '#888' }}>In: {new Date(att.clock_in).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}{att.clock_out ? ' · Out: ' + new Date(att.clock_out).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) : ''}</div>
+                </div>
+                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', fontWeight: 600, background: att.clock_out ? '#dcfce7' : '#fef9c3', color: att.clock_out ? '#16a34a' : '#854d0e' }}>
+                  {att.clock_out ? 'Done' : 'Active'}
+                </span>
+              </div>
+            ))
+          )}
+          <div style={{ marginTop: '12px', textAlign: 'right' }}>
+            <a href="/dashboard/attendance" style={{ fontSize: '12px', color: '#2357A3', textDecoration: 'none', fontWeight: 600 }}>View full history →</a>
           </div>
         </div>
       </div>
