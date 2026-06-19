@@ -25,15 +25,16 @@ export default function Dashboard() {
     init()
   }, [])
 
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
-
   async function fetchAll() {
     const now = new Date()
     const month = now.toISOString().slice(0, 7)
     const today = now.toISOString().slice(0, 10)
+
+    // Profiles map
+    const { data: profilesData } = await supabase.from('profiles').select('id, full_name')
+    const pMap: Record<string,string> = {}
+    ;(profilesData || []).forEach((p: any) => { pMap[p.id] = p.full_name })
+    setProfileMap(pMap)
 
     // Finance this month
     const { data: fin } = await supabase.from('finance').select('*').gte('created_at', month + '-01')
@@ -46,7 +47,7 @@ export default function Dashboard() {
     const { data: todayFin } = await supabase.from('finance').select('*').gte('created_at', today + 'T00:00:00').lte('created_at', today + 'T23:59:59').order('created_at', { ascending: false }).limit(10)
     setTodayFinance(todayFin || [])
 
-    // Tasks with assigned profile name
+    // Tasks
     const { data: tasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false })
     if (tasks) {
       setOpenTasks(tasks.filter((t: any) => t.status === 'pending').length)
@@ -54,20 +55,22 @@ export default function Dashboard() {
       setRecentTasks(tasks.slice(0, 4))
     }
 
-    // Today schedule with profile name
+    // Today schedule
     const { data: shifts } = await supabase.from('schedules').select('*').eq('shift_date', today)
-    const { data: profilesData } = await supabase.from('profiles').select('id, full_name')
-    const profileMap = Object.fromEntries((profilesData || []).map((p: any) => [p.id, p.full_name]))
-    setProfileMap(profileMap)
-    const shiftsWithNames = (shifts || []).map((s: any) => ({ ...s, staff_name: profileMap[s.assigned_to] || 'Unknown' }))
-    setTodayStaff(shiftsWithNames)
+    setTodayStaff(shifts || [])
   }
 
   const netProfit = totalIn - totalOut
   const monthName = new Date().toLocaleString('default', { month: 'long', year: 'numeric' })
 
   function getInitials(name: string) {
-    return name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?'
+    if (!name) return '?'
+    return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push('/login')
   }
 
   const navSections = [
@@ -78,7 +81,6 @@ export default function Dashboard() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Inter,sans-serif' }}>
-      {/* Sidebar */}
       <div style={{ width: '200px', minWidth: '200px', background: '#142F5C', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div style={{ fontFamily: 'Arial Black,sans-serif', fontStyle: 'italic', fontSize: '26px', fontWeight: 900, color: 'white', lineHeight: 1 }}>VERA</div>
@@ -106,7 +108,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Main */}
       <div style={{ flex: 1, background: '#F0F4F8', overflowY: 'auto' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: '20px', fontWeight: 700, color: '#142F5C' }}>Dashboard</div>
@@ -114,7 +115,6 @@ export default function Dashboard() {
         </div>
 
         <div style={{ padding: '24px' }}>
-          {/* KPI Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '24px' }}>
             {[
               { label: 'Money In (month)', val: '$' + totalIn.toLocaleString(), sub: 'This month', color: '#16a34a' },
@@ -130,9 +130,7 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* Middle row */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-            {/* Recent Tasks */}
             <div style={{ background: 'white', borderRadius: '10px', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
               <div style={{ fontSize: '12px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '14px' }}>RECENT TASKS</div>
               {recentTasks.length === 0 ? (
@@ -143,8 +141,8 @@ export default function Dashboard() {
                     <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: task.priority === 'high' ? '#dc2626' : task.priority === 'medium' ? '#f59e0b' : '#6b7280', flexShrink: 0 }}></div>
                     <div>
                       <span style={{ fontSize: '13px', color: '#333' }}>{task.title}</span>
-                      {profileMap[task.assigned_to] && (
-                        <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>👤 {task.profiles.full_name}</div>
+                      {task.assigned_to && profileMap[task.assigned_to] && (
+                        <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>👤 {profileMap[task.assigned_to]}</div>
                       )}
                     </div>
                   </div>
@@ -155,7 +153,6 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {/* Staff Today */}
             <div style={{ background: 'white', borderRadius: '10px', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
               <div style={{ fontSize: '12px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '14px' }}>STAFF TODAY</div>
               {todayStaff.length === 0 ? (
@@ -163,19 +160,18 @@ export default function Dashboard() {
               ) : todayStaff.map((shift: any) => (
                 <div key={shift.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 0', borderBottom: '1px solid #f5f5f5' }}>
                   <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#E8F1F9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#2357A3', flexShrink: 0 }}>
-                    {getInitials(shift.staff_name || '?')}
+                    {getInitials(profileMap[shift.assigned_to] || '?')}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#333' }}>{shift.staff_name || 'Unknown'}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#333' }}>{profileMap[shift.assigned_to] || 'Unassigned'}</div>
                     <div style={{ fontSize: '11px', color: '#888' }}>{shift.start_time} – {shift.end_time}</div>
                   </div>
-                  <div style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }}></div>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }}></div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Finance Today */}
           <div style={{ background: 'white', borderRadius: '10px', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '14px' }}>FINANCE — TODAY</div>
             {todayFinance.length === 0 ? (
@@ -187,7 +183,6 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
-
         </div>
       </div>
     </div>
