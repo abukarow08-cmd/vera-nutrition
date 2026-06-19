@@ -178,19 +178,18 @@ export default function AttendancePage() {
                     <div style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? 'white' : isToday ? '#2357A3' : '#333', marginBottom: '4px' }}>{day}</div>
                     {dayRecords.length > 0 && (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
-                        {dayRecords.slice(0, 3).map((r: any) => (
-                          <div key={r.id} title={profiles[r.staff_id] || 'Staff'} style={{
-                            width: '22px', height: '22px', borderRadius: '50%',
+                        {dayRecords.slice(0, 2).map((r: any) => (
+                          <div key={r.id} style={{
+                            padding: '2px 6px', borderRadius: '4px',
                             background: isSelected ? 'rgba(255,255,255,0.25)' : '#2357A3',
-                            color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '9px', fontWeight: 700
+                            color: 'white', fontSize: '10px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%'
                           }}>
-                            {getInitials(profiles[r.staff_id] || '?')}
+                            {(profiles[r.staff_id] || 'Staff').split(' ')[0]}
                           </div>
                         ))}
-                        {dayRecords.length > 3 && (
-                          <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#E8F1F9', color: '#2357A3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700 }}>
-                            +{dayRecords.length - 3}
+                        {dayRecords.length > 2 && (
+                          <div style={{ padding: '2px 6px', borderRadius: '4px', background: '#E8F1F9', color: '#2357A3', fontSize: '10px', fontWeight: 700 }}>
+                            +{dayRecords.length - 2}
                           </div>
                         )}
                       </div>
