@@ -1,21 +1,24 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { createServerClient } from '@supabase/ssr'
 
 export async function POST(request: Request) {
   try {
-    // Auth check — verify caller is a logged-in owner or manager
-    const cookieStore = cookies()
-    const supabaseAuth = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { get: (name) => cookieStore.get(name)?.value } }
-    )
-    const { data: { user } } = await supabaseAuth.auth.getUser()
-    if (!user) {
+    // Auth check — verify caller is a logged-in owner or manager via Bearer token
+    const authHeader = request.headers.get('Authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    const token = authHeader.replace('Bearer ', '')
+
+    const supabaseAuth = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser(token)
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { data: profile } = await supabaseAuth.from('profiles').select('role').eq('id', user.id).single()
     if (!profile || !['owner', 'manager'].includes(profile.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
