@@ -41,7 +41,7 @@ export default function StaffDashboard() {
         setMySchedule(schedule || [])
 
         // Today's attendance
-        const { data: att } = await supabase.from('attendance').select('*').eq('staff_id', staffData.id).eq('date', today).maybeSingle()
+        const { data: att } = await supabase.from('attendance').select('*').eq('staff_id', user.id).eq('date', today).maybeSingle()
         setAttendance(att || null)
       }
     }
@@ -52,7 +52,7 @@ export default function StaffDashboard() {
     if (!staffRecord) return
     setClockLoading(true)
     const { data, error } = await supabase.from('attendance').insert({
-      staff_id: staffRecord.id,
+      staff_id: user.id,
       date: today,
       clock_in: new Date().toISOString()
     }).select().single()
