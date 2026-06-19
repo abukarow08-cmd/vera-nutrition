@@ -64,6 +64,7 @@ export default function Tasks() {
     setEditId(t.id); setTitle(t.title); setPriority(t.priority); setDueDate(t.due_date?.slice(0,10)||''); setAssignedTo(t.assigned_to||''); setShowForm(true)
   }
 
+  const [taskFilter, setTaskFilter] = useState<'all'|'pending'|'done'>('all')
   const pending = tasks.filter(t => t.status === 'pending')
   const done = tasks.filter(t => t.status === 'done')
 
@@ -114,7 +115,7 @@ export default function Tasks() {
         <div style={{background:'white',border:'0.5px solid #ddd',borderRadius:'10px',overflow:'hidden'}}>
           <div style={{padding:'14px 16px',borderBottom:'0.5px solid #eee',fontSize:'10px',fontWeight:700,color:'#2357A3',letterSpacing:'1px'}}>ALL TASKS</div>
           {tasks.length===0 && <div style={{padding:'32px',textAlign:'center',color:'#888',fontSize:'13px'}}>No tasks yet.</div>}
-          {tasks.map(t=>(
+          {tasks.filter(t=>taskFilter==='all'||t.status===taskFilter).map(t=>(
             <div key={t.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'12px 16px',borderBottom:'0.5px solid #eee'}}>
               <div onClick={()=>toggleStatus(t)} style={{width:'18px',height:'18px',borderRadius:'4px',border:t.status==='done'?'none':'1.5px solid #ddd',background:t.status==='done'?'#2357A3':'white',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0}}>
                 {t.status==='done'&&<span style={{color:'white',fontSize:'11px'}}>✓</span>}
