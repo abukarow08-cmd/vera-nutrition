@@ -213,7 +213,7 @@ export default function StaffDashboard() {
                 <input type="checkbox" checked={task.status === 'done'} onChange={() => toggleTask(task.id, task.status)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
                 <div>
                   <div style={{ fontSize: '13px', color: '#333' }}>{task.title}</div>
-                  {task.due_date && <div style={{ fontSize: '11px', color: task.due_date < today ? '#dc2626' : '#888' }}>Due: {formatDate(task.due_date)}</div>}
+                  {task.due_date && <div style={{ fontSize: '11px', color: task.due_date.slice(0,10) < today ? '#dc2626' : '#888' }}>Due: {new Date(task.due_date.slice(0,10) + 'T12:00:00').toLocaleDateString()}</div>}
                 </div>
               </div>
               <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: task.priority === 'high' ? '#fee2e2' : task.priority === 'medium' ? '#fef9c3' : '#f3f4f6', color: task.priority === 'high' ? '#dc2626' : task.priority === 'medium' ? '#b45309' : '#6b7280', fontWeight: 600 }}>{task.priority}</span>
