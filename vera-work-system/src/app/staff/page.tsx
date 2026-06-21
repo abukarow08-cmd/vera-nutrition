@@ -218,7 +218,7 @@ export default function StaffDashboard() {
 
               {expandedTask === task.id && (
                 <div style={{ padding: '12px', background: '#F8FAFB', borderRadius: '8px', marginBottom: '8px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '8px' }}>NOTES FROM MANAGER</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '8px' }}>NOTES</div>
                   {taskComments.filter((c:any) => c.task_id === task.id).length === 0 && (
                     <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>No notes yet.</div>
                   )}
