@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [todayFinance, setTodayFinance] = useState<any[]>([])
   const [profileMap, setProfileMap] = useState<Record<string,string>>({})
   const [todayAttendance, setTodayAttendance] = useState<any[]>([])
+  const [lowStockItems, setLowStockItems] = useState<any[]>([])
 
   useEffect(() => {
     async function init() {
@@ -66,6 +67,10 @@ export default function Dashboard() {
     // Today attendance
     const { data: attData } = await supabase.from('attendance').select('*').eq('date', today)
     setTodayAttendance(attData || [])
+
+    // Low stock
+    const { data: invData } = await supabase.from('inventory').select('*')
+    if (invData) setLowStockItems(invData.filter((i: any) => i.quantity <= (i.low_stock_alert || 10)))
   }
 
   const netProfit = totalIn - totalOut
@@ -118,6 +123,27 @@ export default function Dashboard() {
 
       <div style={{ flex: 1, background: '#F0F4F8', overflowY: 'auto' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {lowStockItems.length > 0 && (
+            <div style={{ margin: '0 0 12px 0', padding: '14px 20px', background: '#FFFBEB', borderRadius: '8px', border: '1px solid #FCD34D' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '18px' }}>📦</span>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#92400E' }}>
+                  {lowStockItems.length} item{lowStockItems.length > 1 ? 's' : ''} low on stock — reorder needed
+                </span>
+                <a href="/dashboard/inventory" style={{ marginLeft: 'auto', fontSize: '12px', fontWeight: 700, color: '#92400E', textDecoration: 'none', padding: '4px 12px', border: '1px solid #F59E0B', borderRadius: '6px' }}>View Inventory →</a>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {lowStockItems.map((item: any) => (
+                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'white', borderRadius: '6px', border: '1px solid #FCD34D' }}>
+                    <span style={{ fontSize: '11px', color: '#F59E0B' }}>●</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#333' }}>{item.product_name}</span>
+                    <span style={{ fontSize: '11px', color: '#888', marginLeft: '4px' }}>Qty: {item.quantity} {item.unit || ''}</span>
+                    <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '20px', background: '#FECACA', color: '#A32D2D', fontWeight: 700, marginLeft: 'auto' }}>LOW</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {overdueTasks > 0 && (
             <div style={{ margin: '0 0 20px 0', padding: '14px 20px', background: '#FEF2F2', borderRadius: '8px', border: '1px solid #FECACA' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: overdueTaskList.length > 0 ? '10px' : '0' }}>
