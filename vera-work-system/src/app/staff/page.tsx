@@ -26,29 +26,24 @@ export default function StaffDashboard() {
       if (!user) { router.push('/login'); return }
       setUser(user)
 
-      // Get staff record
       const { data: staffData } = await supabase.from('staff').select('*').eq('user_id', user.id).single()
       setStaffRecord(staffData)
 
       if (staffData) {
-        // Today's shift
         const { data: shifts } = await supabase.from('schedules').select('*').eq('assigned_to', user.id).eq('shift_date', today)
         setTodayShift(shifts?.[0] || null)
 
-        // My tasks
         const { data: tasks } = await supabase.from('tasks').select('*').eq('assigned_to', user.id).order('due_date', { ascending: true })
         setMyTasks(tasks || [])
-    if (tasks && tasks.length > 0) {
-      const taskIds = tasks.map((t: any) => t.id)
-      const { data: cmts } = await supabase.from('task_comments').select('*, profiles(full_name)').in('task_id', taskIds).order('created_at', { ascending: true })
-      setTaskComments(cmts || [])
-    }
+        if (tasks && tasks.length > 0) {
+          const taskIds = tasks.map((t: any) => t.id)
+          const { data: cmts } = await supabase.from('task_comments').select('*, profiles(full_name)').in('task_id', taskIds).order('created_at', { ascending: true })
+          setTaskComments(cmts || [])
+        }
 
-        // My schedule
         const { data: schedule } = await supabase.from('schedules').select('*').eq('assigned_to', user.id).order('shift_date', { ascending: true })
         setMySchedule(schedule || [])
 
-        // Today's attendance
         const { data: att } = await supabase.from('attendance').select('*').eq('staff_id', user.id).eq('date', today).maybeSingle()
         setAttendance(att || null)
       }
@@ -85,7 +80,6 @@ export default function StaffDashboard() {
     if (!text) return
     await supabase.from('task_comments').insert({ task_id: taskId, staff_id: userId, comment: text })
     setNewComment(prev => ({ ...prev, [taskId]: '' }))
-    // Refresh comments
     const taskIds = myTasks.map((t: any) => t.id)
     const { data: cmts } = await supabase.from('task_comments').select('*, profiles(full_name)').in('task_id', taskIds).order('created_at', { ascending: true })
     setTaskComments(cmts || [])
@@ -99,7 +93,6 @@ export default function StaffDashboard() {
 
   const todayTasks = myTasks.filter(t => t.status !== 'done')
   const upcomingShifts = mySchedule.filter(s => s.shift_date >= today)
-  const pastShifts = mySchedule.filter(s => s.shift_date < today)
 
   function formatDate(d: string) {
     return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
@@ -128,7 +121,6 @@ export default function StaffDashboard() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F0F4F8', fontFamily: 'Inter, sans-serif' }}>
-      {/* Header */}
       <div style={{ background: '#142F5C', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontFamily: 'Arial Black,sans-serif', fontStyle: 'italic', fontSize: '22px', fontWeight: 900, color: 'white', lineHeight: 1 }}>VERA</div>
@@ -142,7 +134,6 @@ export default function StaffDashboard() {
 
       <div style={{ padding: '20px', maxWidth: '700px', margin: '0 auto' }}>
 
-        {/* Greeting */}
         <div style={{ marginBottom: '20px' }}>
           <div style={{ fontSize: '22px', fontWeight: 700, color: '#142F5C' }}>
             Salaam, {user?.user_metadata?.full_name?.split(' ')[0] || 'there'} 👋
@@ -152,7 +143,6 @@ export default function StaffDashboard() {
           </div>
         </div>
 
-        {/* Clock In/Out Card */}
         <div style={{ background: 'white', borderRadius: '12px', padding: '20px', marginBottom: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '14px' }}>CLOCK IN / OUT</div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -189,7 +179,6 @@ export default function StaffDashboard() {
           </div>
         </div>
 
-        {/* Today's Shift */}
         <div style={{ background: 'white', borderRadius: '12px', padding: '20px', marginBottom: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '12px' }}>TODAY'S SHIFT</div>
           {todayShift ? (
@@ -202,56 +191,56 @@ export default function StaffDashboard() {
           )}
         </div>
 
-        {/* My Tasks */}
         <div style={{ background: 'white', borderRadius: '12px', padding: '20px', marginBottom: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '12px' }}>MY TASKS</div>
           {todayTasks.length === 0 ? (
             <div style={{ fontSize: '13px', color: '#aaa' }}>All tasks done! 🎉</div>
-        ) : todayTasks.map((task: any) => (
-              <div key={task.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', cursor: 'pointer' }} onClick={() => setExpandedTask(expandedTask === task.id ? null : task.id)}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <input type="checkbox" checked={task.status === 'done'} onChange={(e) => { e.stopPropagation(); toggleTask(task.id, task.status) }} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-                    <div>
-                      <div style={{ fontSize: '13px', color: '#333' }}>{task.title}</div>
-                      {task.due_date && <div style={{ fontSize: '11px', color: task.due_date.slice(0,10) < today ? '#dc2626' : '#888' }}>Due: {task.due_date.slice(0,10)}</div>}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: task.priority === 'high' ? '#fee2e2' : task.priority === 'medium' ? '#fef9c3' : '#f3f4f6', color: task.priority === 'high' ? '#dc2626' : task.priority === 'medium' ? '#b45309' : '#6b7280', fontWeight: 600 }}>{task.priority}</span>
-                    {taskComments.filter((c:any) => c.task_id === task.id).length > 0 && (
-                      <span style={{ fontSize: '10px', background: '#2357A3', color: 'white', borderRadius: '20px', padding: '1px 7px', fontWeight: 700 }}>
-                        {taskComments.filter((c:any) => c.task_id === task.id).length} note{taskComments.filter((c:any) => c.task_id === task.id).length > 1 ? 's' : ''}
-                      </span>
-                    )}
-                    <span style={{ fontSize: '11px', color: '#aaa' }}>{expandedTask === task.id ? '▲' : '▼'}</span>
+          ) : todayTasks.map((task: any) => (
+            <div key={task.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', cursor: 'pointer' }} onClick={() => setExpandedTask(expandedTask === task.id ? null : task.id)}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <input type="checkbox" checked={task.status === 'done'} onChange={(e) => { e.stopPropagation(); toggleTask(task.id, task.status) }} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                  <div>
+                    <div style={{ fontSize: '13px', color: '#333' }}>{task.title}</div>
+                    {task.due_date && <div style={{ fontSize: '11px', color: task.due_date.slice(0,10) < today ? '#dc2626' : '#888' }}>Due: {task.due_date.slice(0,10)}</div>}
                   </div>
                 </div>
-                {expandedTask === task.id && (
-                  <div style={{ padding: '12px', background: '#F8FAFB', borderRadius: '8px', marginBottom: '8px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '8px' }}>NOTES FROM MANAGER</div>
-                    {taskComments.filter((c:any) => c.task_id === task.id).length === 0 && (
-                      <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>No notes yet.</div>
-                    )}
-                    {taskComments.filter((c:any) => c.task_id === task.id).map((c: any) => (
-                      <div key={c.id} style={{ background: 'white', borderRadius: '6px', padding: '8px 10px', marginBottom: '6px', border: '1px solid #eee' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#2357A3' }}>{c.profiles?.full_name || 'Manager'}</span>
-                          <span style={{ fontSize: '10px', color: '#aaa' }}>{new Date(c.created_at).toLocaleString('sv-SE', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                        <div style={{ fontSize: '13px', color: '#333' }}>{c.comment}</div>
-                      </div>
-                    ))}
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                      <input value={newComment[task.id] || ''} onChange={e => setNewComment(prev => ({ ...prev, [task.id]: e.target.value }))} onKeyDown={e => e.key === 'Enter' && addComment(task.id, user.id)} placeholder="Reply..." style={{ flex: 1, padding: '6px 10px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '12px' }} />
-                      <button onClick={() => addComment(task.id, user.id)} style={{ padding: '6px 14px', background: '#2357A3', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Send</button>
-                    </div>
-                  </div>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: task.priority === 'high' ? '#fee2e2' : task.priority === 'medium' ? '#fef9c3' : '#f3f4f6', color: task.priority === 'high' ? '#dc2626' : task.priority === 'medium' ? '#b45309' : '#6b7280', fontWeight: 600 }}>{task.priority}</span>
+                  {taskComments.filter((c:any) => c.task_id === task.id).length > 0 && (
+                    <span style={{ fontSize: '10px', background: '#2357A3', color: 'white', borderRadius: '20px', padding: '1px 7px', fontWeight: 700 }}>
+                      {taskComments.filter((c:any) => c.task_id === task.id).length} note{taskComments.filter((c:any) => c.task_id === task.id).length > 1 ? 's' : ''}
+                    </span>
+                  )}
+                  <span style={{ fontSize: '11px', color: '#aaa' }}>{expandedTask === task.id ? '▲' : '▼'}</span>
+                </div>
               </div>
-            ))
 
-        {/* My Schedule */}
+              {expandedTask === task.id && (
+                <div style={{ padding: '12px', background: '#F8FAFB', borderRadius: '8px', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '8px' }}>NOTES FROM MANAGER</div>
+                  {taskComments.filter((c:any) => c.task_id === task.id).length === 0 && (
+                    <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>No notes yet.</div>
+                  )}
+                  {taskComments.filter((c:any) => c.task_id === task.id).map((c: any) => (
+                    <div key={c.id} style={{ background: 'white', borderRadius: '6px', padding: '8px 10px', marginBottom: '6px', border: '1px solid #eee' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#2357A3' }}>{c.profiles?.full_name || 'Manager'}</span>
+                        <span style={{ fontSize: '10px', color: '#aaa' }}>{new Date(c.created_at).toLocaleString('sv-SE', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#333' }}>{c.comment}</div>
+                    </div>
+                  ))}
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <input value={newComment[task.id] || ''} onChange={(e) => setNewComment(prev => ({ ...prev, [task.id]: e.target.value }))} onKeyDown={(e) => e.key === 'Enter' && addComment(task.id, user.id)} placeholder="Reply..." style={{ flex: 1, padding: '6px 10px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '12px' }} />
+                    <button onClick={() => addComment(task.id, user.id)} style={{ padding: '6px 14px', background: '#2357A3', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Send</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
         <div style={{ background: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px' }}>MY SCHEDULE</div>
@@ -263,9 +252,9 @@ export default function StaffDashboard() {
 
           {view === 'list' && (
             <div>
-              {upcomingShifts.length === 0 && todayTasks.length === 0 ? (
-                <div style={{ color: '#aaa', fontSize: '13px' }}>No upcoming shifts</div>
-              ) : [...upcomingShifts].map(shift => (
+              {upcomingShifts.length === 0 ? (
+                <div style={{ fontSize: '13px', color: '#aaa' }}>No upcoming shifts</div>
+              ) : upcomingShifts.map(shift => (
                 <div key={shift.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f5f5f5' }}>
                   <div style={{ fontSize: '13px', color: '#333', fontWeight: 500 }}>{formatDate(shift.shift_date)}</div>
                   <div style={{ fontSize: '12px', color: '#666' }}>{shift.start_time} – {shift.end_time}</div>
@@ -298,7 +287,7 @@ export default function StaffDashboard() {
                       <div style={{ fontSize: '11px', fontWeight: isToday ? 700 : 400, color: isToday ? '#2357A3' : '#666', marginBottom: '2px' }}>{day}</div>
                       {dayShifts.map(s => (
                         <div key={s.id} style={{ background: '#2357A3', color: 'white', borderRadius: '3px', padding: '1px 4px', fontSize: '9px', fontWeight: 600, marginBottom: '1px' }}>
-                          {s.start_time?.slice(0,5)}{s.end_time ? ` -${s.end_time.slice(0,5)}` : ''}
+                          {s.start_time?.slice(0,5)}{s.end_time ? ` –${s.end_time.slice(0,5)}` : ''}
                         </div>
                       ))}
                     </div>
