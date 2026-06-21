@@ -50,6 +50,19 @@ export default function Finance() {
 
   const totalIn = entries.filter(e=>e.type==='in').reduce((s,e)=>s+Number(e.amount),0)
   const totalOut = entries.filter(e=>e.type==='out').reduce((s,e)=>s+Number(e.amount),0)
+
+  // Build last 6 months chart data
+  const monthlyData = Array.from({length: 6}, (_, i) => {
+    const d = new Date()
+    d.setMonth(d.getMonth() - (5 - i))
+    const key = d.toISOString().slice(0, 7)
+    const label = d.toLocaleString('default', { month: 'short' })
+    const monthEntries = entries.filter(e => e.created_at?.slice(0, 7) === key)
+    const income = monthEntries.filter(e => e.type === 'in').reduce((s, e) => s + Number(e.amount), 0)
+    const expense = monthEntries.filter(e => e.type === 'out').reduce((s, e) => s + Number(e.amount), 0)
+    return { label, income, expense }
+  })
+  const chartMax = Math.max(...monthlyData.map(m => Math.max(m.income, m.expense)), 1)
   const profit = totalIn - totalOut
   const inp = {width:'100%',padding:'8px',border:'1px solid #ddd',borderRadius:'6px',fontSize:'13px',color:'#1a1a1a',background:'#fff',boxSizing:'border-box' as any}
 
@@ -95,7 +108,25 @@ export default function Finance() {
               </div>
             </div>
           )}
-          <div style={{background:'white',border:'0.5px solid #ddd',borderRadius:'10px',overflow:'hidden'}}>
+          <div style={{background:'white',borderRadius:'12px',padding:'24px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)',marginBottom:'24px'}}>
+        <div style={{fontSize:'12px',fontWeight:700,color:'#2357A3',letterSpacing:'1px',marginBottom:'20px'}}>INCOME VS EXPENSES — LAST 6 MONTHS</div>
+        <div style={{display:'flex',alignItems:'flex-end',gap:'12px',height:'160px'}}>
+          {monthlyData.map((m,i) => (
+            <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',height:'100%',justifyContent:'flex-end'}}>
+              <div style={{width:'100%',display:'flex',gap:'3px',alignItems:'flex-end',height:'140px'}}>
+                <div style={{flex:1,background:'#16a34a',borderRadius:'4px 4px 0 0',height:`${(m.income/chartMax)*100}%`,minHeight:m.income>0?'4px':'0'}} title={`Income: $${m.income.toFixed(0)}`}/>
+                <div style={{flex:1,background:'#dc2626',borderRadius:'4px 4px 0 0',height:`${(m.expense/chartMax)*100}%`,minHeight:m.expense>0?'4px':'0'}} title={`Expense: $${m.expense.toFixed(0)}`}/>
+              </div>
+              <div style={{fontSize:'10px',color:'#888',fontWeight:600}}>{m.label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{display:'flex',gap:'16px',marginTop:'12px',justifyContent:'center'}}>
+          <div style={{display:'flex',alignItems:'center',gap:'6px'}}><div style={{width:'12px',height:'12px',background:'#16a34a',borderRadius:'2px'}}/><span style={{fontSize:'11px',color:'#555'}}>Income</span></div>
+          <div style={{display:'flex',alignItems:'center',gap:'6px'}}><div style={{width:'12px',height:'12px',background:'#dc2626',borderRadius:'2px'}}/><span style={{fontSize:'11px',color:'#555'}}>Expenses</span></div>
+        </div>
+      </div>
+      <div style={{background:'white',border:'0.5px solid #ddd',borderRadius:'10px',overflow:'hidden'}}>
             <div style={{padding:'14px 16px',borderBottom:'0.5px solid #eee',fontSize:'10px',fontWeight:700,color:'#2357A3',letterSpacing:'1px'}}>ALL ENTRIES</div>
             {entries.length===0 && <div style={{padding:'32px',textAlign:'center',color:'#888',fontSize:'13px'}}>No entries yet.</div>}
             {entries.map(e=>(
