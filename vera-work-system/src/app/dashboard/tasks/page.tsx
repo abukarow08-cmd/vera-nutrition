@@ -119,7 +119,7 @@ export default function Tasks() {
 
   return (
     <div style={{flex:1, display:'flex', flexDirection:'column', background:'#F0F4F8'}}>
-      <div style={{color:'#F5A623',background:'none',border:'none',cursor:'pointer',padding:'8px 20px',fontWeight:700,cursor:'pointer',fontSize:'11px'}} onClick={()=>router.push('/dashboard')}>← Dashboard</div>
+      <div style={{color:'#F5A623',background:'none',border:'none',cursor:'pointer',padding:'8px 20px',fontWeight:700,fontSize:'11px'}} onClick={()=>router.push('/dashboard')}>← Dashboard</div>
       <div style={{flex:1, padding:'20px'}}>
         <div style={{background:'white', border:'0.5px solid #ddd', borderRadius:'10px', padding:'0 20px', height:'52px', display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px'}}>
           <div style={{fontSize:'12px', fontWeight:700, color:'#142F5C', letterSpacing:'1px'}}>TASKS</div>
