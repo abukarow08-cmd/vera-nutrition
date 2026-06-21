@@ -9,6 +9,9 @@ export default function StaffDashboard() {
   const [staffRecord, setStaffRecord] = useState<any>(null)
   const [todayShift, setTodayShift] = useState<any>(null)
   const [myTasks, setMyTasks] = useState<any[]>([])
+  const [taskComments, setTaskComments] = useState<any[]>([])
+  const [newComment, setNewComment] = useState<Record<string,string>>({})
+  const [expandedTask, setExpandedTask] = useState<string|null>(null)
   const [mySchedule, setMySchedule] = useState<any[]>([])
   const [view, setView] = useState<'list' | 'calendar'>('list')
   const [calMonth, setCalMonth] = useState(new Date())
@@ -35,6 +38,11 @@ export default function StaffDashboard() {
         // My tasks
         const { data: tasks } = await supabase.from('tasks').select('*').eq('assigned_to', user.id).order('due_date', { ascending: true })
         setMyTasks(tasks || [])
+    if (tasks && tasks.length > 0) {
+      const taskIds = tasks.map((t: any) => t.id)
+      const { data: cmts } = await supabase.from('task_comments').select('*, profiles(full_name)').in('task_id', taskIds).order('created_at', { ascending: true })
+      setTaskComments(cmts || [])
+    }
 
         // My schedule
         const { data: schedule } = await supabase.from('schedules').select('*').eq('assigned_to', user.id).order('shift_date', { ascending: true })
@@ -70,6 +78,17 @@ export default function StaffDashboard() {
     if (error) { console.error('Clock in error:', error); alert('Error: ' + error.message) }
     else setAttendance(data)
     setClockLoading(false)
+  }
+
+  async function addComment(taskId: string, userId: string) {
+    const text = newComment[taskId]?.trim()
+    if (!text) return
+    await supabase.from('task_comments').insert({ task_id: taskId, staff_id: userId, comment: text })
+    setNewComment(prev => ({ ...prev, [taskId]: '' }))
+    // Refresh comments
+    const taskIds = myTasks.map((t: any) => t.id)
+    const { data: cmts } = await supabase.from('task_comments').select('*, profiles(full_name)').in('task_id', taskIds).order('created_at', { ascending: true })
+    setTaskComments(cmts || [])
   }
 
   async function toggleTask(taskId: string, currentStatus: string) {
