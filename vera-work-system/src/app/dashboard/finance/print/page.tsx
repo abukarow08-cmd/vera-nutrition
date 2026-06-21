@@ -15,8 +15,8 @@ export default function FinancePrint() {
     load()
   }, [])
 
-  const totalIncome = records.filter(r => r.type === 'income').reduce((s, r) => s + Number(r.amount), 0)
-  const totalExpenses = records.filter(r => r.type === 'expense').reduce((s, r) => s + Number(r.amount), 0)
+  const totalIncome = records.filter(r => r.type === 'income' || r.type === 'in').reduce((s, r) => s + Number(r.amount), 0)
+  const totalExpenses = records.filter(r => r.type === 'expense' || r.type === 'out').reduce((s, r) => s + Number(r.amount), 0)
   const net = totalIncome - totalExpenses
 
   if (loading) return <div style={{ padding: '40px', fontFamily: 'Inter, sans-serif' }}>Loading...</div>
@@ -71,12 +71,12 @@ export default function FinancePrint() {
               <td style={{ padding: '9px 12px' }}>{r.description || '-'}</td>
               <td style={{ padding: '9px 12px' }}>{r.category || '-'}</td>
               <td style={{ padding: '9px 12px' }}>
-                <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: r.type === 'income' ? '#dcfce7' : '#fee2e2', color: r.type === 'income' ? '#16a34a' : '#dc2626' }}>
+                <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: (r.type === 'income' || r.type === 'in') ? '#dcfce7' : '#fee2e2', color: (r.type === 'income' || r.type === 'in') ? '#16a34a' : '#dc2626' }}>
                   {r.type}
                 </span>
               </td>
-              <td style={{ padding: '9px 12px', textAlign: 'right', fontWeight: 600, color: r.type === 'income' ? '#16a34a' : '#dc2626' }}>
-                {r.type === 'income' ? '+' : '-'}{Number(r.amount).toLocaleString()} kr
+              <td style={{ padding: '9px 12px', textAlign: 'right', fontWeight: 600, color: (r.type === 'income' || r.type === 'in') ? '#16a34a' : '#dc2626' }}>
+                {(r.type === 'income' || r.type === 'in') ? '+' : '-'}{Number(r.amount).toLocaleString()} kr
               </td>
             </tr>
           ))}
