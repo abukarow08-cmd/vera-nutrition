@@ -8,7 +8,7 @@ export default function FinancePrint() {
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.from('finance').select('*').order('date', { ascending: false })
+      const { data } = await supabase.from('finance').select('*').order('created_at', { ascending: false })
       setRecords(data || [])
       setLoading(false)
     }
@@ -67,7 +67,7 @@ export default function FinancePrint() {
         <tbody>
           {records.map((r, i) => (
             <tr key={r.id} style={{ background: i % 2 === 0 ? 'white' : '#F8FAFB', borderBottom: '1px solid #eee' }}>
-              <td style={{ padding: '9px 12px' }}>{r.date}</td>
+              <td style={{ padding: '9px 12px' }}>{r.created_at?.slice(0,10)}</td>
               <td style={{ padding: '9px 12px' }}>{r.description || '-'}</td>
               <td style={{ padding: '9px 12px' }}>{r.category || '-'}</td>
               <td style={{ padding: '9px 12px' }}>
