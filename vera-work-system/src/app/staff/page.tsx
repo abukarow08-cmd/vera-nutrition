@@ -207,19 +207,49 @@ export default function StaffDashboard() {
           <div style={{ fontSize: '12px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '12px' }}>MY TASKS</div>
           {todayTasks.length === 0 ? (
             <div style={{ fontSize: '13px', color: '#aaa' }}>All tasks done! 🎉</div>
-          ) : todayTasks.map((task: any) => (
-            <div key={task.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f5f5f5' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <input type="checkbox" checked={task.status === 'done'} onChange={() => toggleTask(task.id, task.status)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-                <div>
-                  <div style={{ fontSize: '13px', color: '#333' }}>{task.title}</div>
-                  {task.due_date && <div style={{ fontSize: '11px', color: task.due_date.slice(0,10) < today ? '#dc2626' : '#888' }}>Due: {new Date(task.due_date.slice(0,10) + 'T12:00:00').toLocaleDateString()}</div>}
+        ) : todayTasks.map((task: any) => (
+              <div key={task.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', cursor: 'pointer' }} onClick={() => setExpandedTask(expandedTask === task.id ? null : task.id)}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <input type="checkbox" checked={task.status === 'done'} onChange={(e) => { e.stopPropagation(); toggleTask(task.id, task.status) }} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                    <div>
+                      <div style={{ fontSize: '13px', color: '#333' }}>{task.title}</div>
+                      {task.due_date && <div style={{ fontSize: '11px', color: task.due_date.slice(0,10) < today ? '#dc2626' : '#888' }}>Due: {task.due_date.slice(0,10)}</div>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: task.priority === 'high' ? '#fee2e2' : task.priority === 'medium' ? '#fef9c3' : '#f3f4f6', color: task.priority === 'high' ? '#dc2626' : task.priority === 'medium' ? '#b45309' : '#6b7280', fontWeight: 600 }}>{task.priority}</span>
+                    {taskComments.filter((c:any) => c.task_id === task.id).length > 0 && (
+                      <span style={{ fontSize: '10px', background: '#2357A3', color: 'white', borderRadius: '20px', padding: '1px 7px', fontWeight: 700 }}>
+                        {taskComments.filter((c:any) => c.task_id === task.id).length} note{taskComments.filter((c:any) => c.task_id === task.id).length > 1 ? 's' : ''}
+                      </span>
+                    )}
+                    <span style={{ fontSize: '11px', color: '#aaa' }}>{expandedTask === task.id ? '▲' : '▼'}</span>
+                  </div>
                 </div>
+                {expandedTask === task.id && (
+                  <div style={{ padding: '12px', background: '#F8FAFB', borderRadius: '8px', marginBottom: '8px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#2357A3', letterSpacing: '1px', marginBottom: '8px' }}>NOTES FROM MANAGER</div>
+                    {taskComments.filter((c:any) => c.task_id === task.id).length === 0 && (
+                      <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>No notes yet.</div>
+                    )}
+                    {taskComments.filter((c:any) => c.task_id === task.id).map((c: any) => (
+                      <div key={c.id} style={{ background: 'white', borderRadius: '6px', padding: '8px 10px', marginBottom: '6px', border: '1px solid #eee' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#2357A3' }}>{c.profiles?.full_name || 'Manager'}</span>
+                          <span style={{ fontSize: '10px', color: '#aaa' }}>{new Date(c.created_at).toLocaleString('sv-SE', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#333' }}>{c.comment}</div>
+                      </div>
+                    ))}
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                      <input value={newComment[task.id] || ''} onChange={e => setNewComment(prev => ({ ...prev, [task.id]: e.target.value }))} onKeyDown={e => e.key === 'Enter' && addComment(task.id, user.id)} placeholder="Reply..." style={{ flex: 1, padding: '6px 10px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '12px' }} />
+                      <button onClick={() => addComment(task.id, user.id)} style={{ padding: '6px 14px', background: '#2357A3', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Send</button>
+                    </div>
+                  </div>
+                )}
               </div>
-              <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: task.priority === 'high' ? '#fee2e2' : task.priority === 'medium' ? '#fef9c3' : '#f3f4f6', color: task.priority === 'high' ? '#dc2626' : task.priority === 'medium' ? '#b45309' : '#6b7280', fontWeight: 600 }}>{task.priority}</span>
-            </div>
-          ))}
-        </div>
+            ))
 
         {/* My Schedule */}
         <div style={{ background: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
