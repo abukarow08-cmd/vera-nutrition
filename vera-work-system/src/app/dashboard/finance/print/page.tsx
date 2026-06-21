@@ -43,9 +43,9 @@ export default function FinancePrint() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
         {[
-          { label: 'Total Income', value: `${totalIncome.toLocaleString()} kr`, color: '#16a34a' },
-          { label: 'Total Expenses', value: `${totalExpenses.toLocaleString()} kr`, color: '#dc2626' },
-          { label: 'Net Profit', value: `${net.toLocaleString()} kr`, color: net >= 0 ? '#2357A3' : '#dc2626' },
+          { label: 'Total Income', value: `${totalIncome.toLocaleString('en-US')} kr`, color: '#16a34a' },
+          { label: 'Total Expenses', value: `${totalExpenses.toLocaleString('en-US')} kr`, color: '#dc2626' },
+          { label: 'Net Profit', value: `${net.toLocaleString('en-US')} kr`, color: net >= 0 ? '#2357A3' : '#dc2626' },
         ].map(k => (
           <div key={k.label} style={{ background: '#EEF4FF', borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
             <div style={{ fontSize: '22px', fontWeight: 700, color: k.color }}>{k.value}</div>
@@ -76,7 +76,7 @@ export default function FinancePrint() {
                 </span>
               </td>
               <td style={{ padding: '9px 12px', textAlign: 'right', fontWeight: 600, color: (r.type === 'income' || r.type === 'in') ? '#16a34a' : '#dc2626' }}>
-                {(r.type === 'income' || r.type === 'in') ? '+' : '-'}{Number(r.amount).toLocaleString()} kr
+                {(r.type === 'income' || r.type === 'in') ? '+' : '-'}{Number(r.amount).toLocaleString('en-US')} kr
               </td>
             </tr>
           ))}
