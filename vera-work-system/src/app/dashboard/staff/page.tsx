@@ -109,7 +109,7 @@ export default function StaffPage() {
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#F0F4F8' }}>
         <div style={{ background: 'white', borderBottom: '0.5px solid #ddd', padding: '0 20px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: '#142F5C' }}>Staff / HR</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><div style={{ fontSize: '16px', fontWeight: 700, color: '#142F5C' }}>Staff / HR</div><a href="/dashboard/staff/print" target="_blank" style={{ background: "#2357A3", color: "white", padding: "6px 14px", borderRadius: "6px", fontSize: "12px", fontWeight: 600, textDecoration: "none" }}>⬇ Export PDF</a></div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button onClick={() => { setShowCreateAuth(!showCreateAuth); setShowForm(false) }} style={{ background: '#142F5C', color: 'white', border: 'none', padding: '7px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>+ Create Login User</button>
             <button onClick={() => { setShowForm(!showForm); setEditId(null); setFullName(''); setEmail(''); setRole('staff'); setPhone(''); setSalary(''); setStartDate('') }} style={{ background: '#F5A623', color: 'white', border: 'none', padding: '7px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>+ Add Staff</button>

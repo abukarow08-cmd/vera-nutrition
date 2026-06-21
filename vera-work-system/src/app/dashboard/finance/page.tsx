@@ -84,7 +84,7 @@ export default function Finance() {
       </div>
       <div style={{flex:1,display:'flex',flexDirection:'column',background:'#F0F4F8'}}>
         <div style={{background:'white',borderBottom:'0.5px solid #ddd',padding:'0 20px',height:'52px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <div style={{fontSize:'16px',fontWeight:700,color:'#142F5C'}}>Finance</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{fontSize:'16px',fontWeight:700,color:'#142F5C'}}>Finance</div><a href="/dashboard/finance/print" target="_blank" style={{background:"#2357A3",color:"white",padding:"6px 14px",borderRadius:"6px",fontSize:"12px",fontWeight:600,textDecoration:"none"}}>⬇ Export PDF</a></div>
           <button onClick={()=>{setShowForm(!showForm);setEditId(null);setDesc('');setAmount('');setType('in');setCategory('')}} style={{background:'#F5A623',color:'white',border:'none',padding:'7px 16px',borderRadius:'6px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}>+ Add Entry</button>
         </div>
         <div style={{flex:1,padding:'20px'}}>
